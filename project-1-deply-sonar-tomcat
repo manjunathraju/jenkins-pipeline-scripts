@@ -1,0 +1,26 @@
+node
+{
+    def mavenHome = tool name: "maven3.9.6"
+stage (" github project") 
+ {
+    git credentialsId: '5542d761-0f06-4f35-8141-3a62763cfbc7', url: 'https://github.com/manjunathraju/maven-web-application.git'
+}
+
+
+stage('Build')
+ {
+    sh "${mavenHome}/bin/mvn clean package"
+ }
+
+stage('sonarqube report')
+{
+    sh "${mavenHome}/bin/mvn sonar:sonar"
+}
+
+stage('tomcat deployment')
+{
+    sshagent(['tomcatserver']) {
+    sh "scp -o BatchMode=yes -o StrictHostKeyChecking=no target/maven-web-application.war root@server.sprintzeal.org:/opt/tomcat9/webapps/"
+}
+}
+}

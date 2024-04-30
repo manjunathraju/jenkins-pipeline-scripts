@@ -1,0 +1,26 @@
+node{
+    def mvnHome = tool name: 'maven3.9.6'
+    stage('github build'){
+        git 'https://github.com/manjunathraju/spring-boot-mongo-docker.git'
+    }
+    stage('maven build'){
+        sh "${mvnHome}/bin/mvn package"
+    }
+    stage('docker build image'){
+        sh "docker build -t manjunathraju05/spring-boot-mongo ."
+    }
+    
+    stage('docker push and deploy'){
+        withCredentials([string(credentialsId: 'dockerlogin', variable: 'dockerlogin')]) {
+            sh "docker login -u manjunathraju05 -p ${dockerlogin}"
+    }
+            sh "docker push manjunathraju05/spring-boot-mongo"           
+    }
+    stage('Deploy to k8s'){
+       sh ('aws eks update-kubeconfig --name demo-eks --region us-east-1')
+       sh "kubectl get ns"
+       sh "kubectl apply -f javawebapp-deployment.yml"
+           
+    }
+    
+}

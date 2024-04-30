@@ -1,0 +1,30 @@
+node(){
+    
+    stage('git checkout code'){
+        git credentialsId: 'c28fbcf9-b5c1-41e3-9842-546d86a94e81', url: 'https://github.com/manjunathraju/nodejs-app-mss.git'
+    }
+    
+    stage('nodejs installation'){
+        nodejs(nodeJSInstallationName: 'node20'){
+            sh "npm install"
+        }
+        
+    }
+    /*
+    stage('Generate sonarqube report'){
+        nodejs(nodeJSInstallationName: 'node20'){
+            sh "npm run sonar"
+        }
+    }
+    */
+    stage('Upload artifactory Nexus'){
+         withEnv(["TOKEN=${NPMJS_TOKEN}"]) {
+            sh 'echo "//registry.npmjs.org/:_authToken=${TOKEN}" >> ~/.npmrc'
+            sh "npm publish"
+        }
+    }
+    
+    
+    
+    
+}

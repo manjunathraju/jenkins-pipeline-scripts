@@ -1,0 +1,24 @@
+node {
+    def buildNumber = BUILD_NUMBER
+    def mavenHome = tool name: "maven3.9.6"
+    stage ('git clone project') {
+        git credentialsId: 'c28fbcf9-b5c1-41e3-9842-546d86a94e81', url: 'https://github.com/manjunathraju/java-web-app-docker.git'
+    }
+    
+    stage ('maven repo') {
+        sh "${mavenHome}/bin/mvn clean package"
+    }
+    
+    stage ('docker build image') {
+        sh "docker build -t manjunathraju05/java-web-app-docker:${buildNumber} ."
+    }
+    
+    stage ('Docker login and puhs') {
+        withCredentials([string(credentialsId: 'Docker_hub_pwd', variable: 'docker_hub')]) {
+            sh "docker login -u manjunathraju05 -p ${docker_hub}"
+}
+        sh "docker push manjunathraju05/java-web-app-docker:${buildNumber}"
+        
+    }
+    
+}
